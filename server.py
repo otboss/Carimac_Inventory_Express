@@ -20,10 +20,11 @@ def login(idnum, password):
             return 1
     return 0
 
-def search(query, sorting):
+def finditem(query, sorting):
     global db
     results = []
-    for i in db.tables["items"]
+    query = query['query'][0]
+    for i in db.tables["items"]:
         if query in dict(i)["name"]:
             results.push(dict(i)["name"])
     if sorting == 123:
@@ -111,10 +112,15 @@ def loginuserin():
 def register():
     return "This is the register page"
     
-    
+  
 @app.route('/search', methods=['GET','POST'])
 def search():
-    
+    query = (dict(request.args))
+    print(request.raw._original_response.fp.raw._sock.getpeername()[0])
+    result = finditem(query, 123)
+    #~ if len(result):
+        #~ return "no results found"
+    #~ return result
     return "This is the search page"  
     
 
@@ -122,12 +128,15 @@ def search():
 def invoice():
     return "This is the invoice page"
     
+@app.route('/invoice', methods=['GET','POST'])
+def addItem():
+    return "This is the invoice page"
+    
 
 if __name__ == "__main__":
     db = Database()
     #print(db.__dict__)
     #print(db.tables)
-    
     #db.showdb()
     #print(db.db)
     app.debug = True

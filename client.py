@@ -32,16 +32,8 @@ class Employee:
     def __init__(self, id, fname, mname, lname, dob, email, phone, date):
         self.id = id
         self.fname = fname
-        self.mname = mname
         self.lname = lname
-        self.dob = dob
-        self.email = email
-        self.phone = phone
-        self.login = login
         self.pwd = pwd
-        self.slt = slt
-        self.isAdm = isAdm
-        self.date = date
 
 class Notification:
     def __init__(self, id, title, message):
@@ -80,6 +72,7 @@ database = [
 isAdmin = False
 
 def login(id, password):
+    global isAdmin
     r = requests.post(url+"login", data={'id': id, 'password': password})
     if(r.text == "1"):
         if id == "admin":
@@ -94,8 +87,9 @@ def logout():
     os.system('reset || cls')
     
 
-def search(query, sorting, sortBy):
+def search(query, sorting):
     r = requests.get(url+"search?query="+query)
+    print(r.text)
     if sorting == 123:
         print("")
     else:
@@ -104,7 +98,7 @@ def search(query, sorting, sortBy):
     return results
 
 
-def mainMenu():
+def adminMenu():
     print("Select an option shown below: ")
     print(" 1] Search Item")
     print(" 2] Add Item")
@@ -112,14 +106,16 @@ def mainMenu():
     print(" 4] Remove Item") 
     print(" 5] Remove Account") 
     print(" 6] View Orders") 
-    print(" 7] Log Off\n") 
+    print(" 7] Clear Screen")
+    print(" 8] Log Off\n") 
 
-def adminMenu():
+def mainMenu():
     print("Select an option shown below: ")
     print(" 1] Search Item")
     print(" 2] Place Order")
     print(" 3] View Notifications")  
-    print(" 4] Log Off\n") 
+    print(" 4] Clear Screen")  
+    print(" 5] Log Off\n") 
 
 def title():
     print("=========================")
@@ -163,31 +159,54 @@ if __name__ == "__main__":
         if login(username, password):
             #LOGIN SUCCESSFUL
             running = True
+            os.system('reset || cls')
             while(running):
-                os.system('reset || cls')
                 print("Logged in as: "+username+"\n")
                 if(isAdmin):
                     adminMenu()
                     while(True):
                         try:                
                             choice = int(input("Choice: "))
-                            if choice < 1 or choice > 4:
+                            if choice < 1 or choice > 8:
                                 raise Exception()
                             break
                         except:
                             print("\nInvalid Selection\n")
                             
-                        if(choice == 7):
-                            logout()
+                    if(choice == 8):
+                        logout()
+                    
+                    if(choice == 1):
+                        query = input("Enter the search query :")
+                        print(search(query, 123))
                         
-                        if(choice == 1):
-                            query = input("Enter the search query :")
+                    if(choice == 2):
+                        item = Item()
+                        item.name = input("Enter the item name: ")
+                        item.quantity = float(input("Enter the item quantity: "))
+                        
+                        query = input("Enter the search query :")
+                        
+                    if(choice == 3):
+                        query = input("Enter the search query :")
+                        
+                    if(choice == 4):
+                        os.system('reset || cls')
+                        
+                    if(choice == 4):
+                        os.system('reset || cls')
+                        
+                    if(choice == 4):
+                        os.system('reset || cls')
+                        
+                    if(choice == 7):
+                        os.system('reset || cls')
                 else:
                     mainMenu()
                     while True:
                         try:                
                             choice = int(input("Choice: "))
-                            if choice < 1 or choice > 4:
+                            if choice < 1 or choice > 7:
                                 raise Exception()
                             break
                         except:
@@ -198,7 +217,7 @@ if __name__ == "__main__":
                         logout()       
                         break      
                     if choice == 1:
-                        query = raw_input("Enter Search Query: ")
+                        query = input("Enter Search Query: ")
                         print (search)
                     if choice == 2:
                         #COMPLETE OPTION 2
