@@ -3,6 +3,8 @@ import getpass
 import time
 import requests
 import ast
+import datetime
+import sys
 
 ########
 #CLASSES
@@ -14,10 +16,15 @@ class Item:
         self.quantity = quantity
 
 class Invoice:
-    def __init__(self, id, InventoryRecordId, quantity):
+    def __init__(self, id, staffIdNum):
         self.id = id
-        self.item = InventoryRecordId
-        self.quantity = quantity
+        self.items = []
+        if datetime.datetime.now().month < 10:
+           self.date = str(datetime.datetime.now().year)+"-0"+str(datetime.datetime.now().month)+"-"+str(datetime.datetime.now().day)
+        else:
+           self.date = str(datetime.datetime.now().year)+"-"+str(datetime.datetime.now().month)+"-"+str(datetime.datetime.now().day)
+        self.staffIdNum = staffIdNum
+        self.filled = False
         
 class UserAccount:
     def __init__(self, id, password):
@@ -30,10 +37,10 @@ class Employee:
         self.fname = fname
         self.lname = lname
 
-class Notification:
-    def __init__(self, title, message):
-        self.title = title
-        self.message = message
+#~ class Notification:
+    #~ def __init__(self, title, message):
+        #~ self.title = title
+        #~ self.message = message
         
 #INVENTORY CLASS NOT INCLUDED, THE INVENTORY WOULD BE AN SQLLITE FILE RATHER THAN A PYTHON OBJECT
 #THE SQLLITE FIEL WOULD STORE ALL ACCOUNTS, NOTIFICATIONS, 
@@ -42,7 +49,10 @@ class Notification:
 
 isAdmin = False
 
-
+def printf(format, *args):
+    sys.stdout.write(format % args)
+    
+    
 def login(id, password):
     global isAdmin
     r = requests.post(url+"login", data={'id': id, 'password': password})
@@ -68,7 +78,7 @@ def search(query):
     print("==========================")
     print()
     if len(lst) == 0:
-        print(" No results found.")
+        print("    No results found")
     for i in range(len(lst)): 
         print(" "+ str(i+1)+"] "+lst[i])
     print("\n")
@@ -82,7 +92,7 @@ def search2(query):
     print("==========================")
     print()
     if len(lst) == 0:
-        print(" No results found.")
+        print("    No results found")
     for i in range(len(lst)): 
         print(" "+ str(i+1)+"] "+lst[i])
     print("\n")
@@ -97,7 +107,7 @@ def deleteItem(query):
     item = ""
     while(True):
         try:
-            item = input("Select the desired item: ")
+            item = input("Select the desired item to delete: ")
             if(item == 'exit'):
                 return
             item = int(item)
@@ -107,8 +117,23 @@ def deleteItem(query):
     r = requests.get(url+"deleteitem?item="+p[item-1])
     print("\n"+r.text+"\n")
     
-        
-    
+def getInvoices(selection):
+    global url
+    r = requests.get(url+"viewinvoices?selection="+str(selection))
+    invoices = ast.literal_eval(r.text)
+    if(len(invoices) == 0):
+        print("\nNo invoices fall under the this category\n\n")
+    print("\n\n\n")
+    for i in invoices:
+        print("======================")
+        print("INVOICE NO: " + str(i["id"]))
+        print("======================\n")
+        print("Employee ID: " + str(i["staffIdNum"]))
+        print("Date: " + i["date"] + "\n")
+        for j in range(len(i["items"])):
+            printf(" %2d] %13s %5.1f\n", j, i["items"][j]["name"], i["items"][j]["quantity"])
+            #print(" "+str(j)+"]  " + i["items"][j]["name"] + "   " + str(i["items"][j]["quantity"]))
+        print("\n\n\n")
 
 def adminMenu():
     print("Select an option shown below: ")
@@ -206,10 +231,10 @@ if __name__ == "__main__":
                         insertItem(str(item.__dict__))
                         
                     if(choice == 3):
-                        query = input("Enter the search query: ")
+                        continue
                         
                     if(choice == 4):
-                        deleteItem(input("Enter a substring of the item name: "))
+                        deleteItem(input("\nEnter a substring of the item name: "))
                         
                     if(choice == 5):
                         ####CODE HERE###
@@ -221,13 +246,18 @@ if __name__ == "__main__":
                         os.system('reset || cls')
                         
                     if(choice == 6):
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        os.system('reset || cls')
+                        while True: 
+                            print("\nSelect an option shown: ")
+                            print(" 1] View Unfilled invoices")
+                            print(" 2] View Filled invoices")
+                            print(" 3] View All Invoices\n")
+                            try:
+                                selection = int(input("Choice: " ))
+                                break
+                            except:
+                                print("\nEnter a selection shown\n")
+                                
+                        getInvoices(selection)
                         
                     if(choice == 7):
                         ####CODE HERE###

@@ -16,7 +16,7 @@ import ast
         
 class Database:
     def __init__(self):
-        self.tables = {"accounts":[{"id":"admin", "password":"password"}], "invoices":[], "items":[{"name": "pen", "quantity": 3}]}
+        self.tables = {"accounts":[{"id":"admin", "password":"password"}], "invoices":[{"id":1, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-14", "staffIdNum":0, "filled":False}, {"id":2, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-15", "staffIdNum":0, "filled":False}], "items":[{"name": "pen", "quantity": 3}]}
           
     def addItem(self, item):
         self.tables["items"].append(item)
@@ -99,7 +99,6 @@ class Administrator(Employee):
                 db.tables["accounts"].pop(i)
                 return True
         return False
-                
                 
         
     def addAccount(self, accountId):
@@ -220,14 +219,14 @@ def deleteitem():
 @app.route('/viewinvoices', methods=['GET','POST'])
 def viewinvoices():
     try:
-        r = dict(request.args)['choice']
-        if(choice == 3):
-            return adm.viewInvoice(3)
-        elif(choice == 2):
-            return adm.viewInvoice(2)
+        selection = int(dict(request.args)['selection'][0])
+        if(selection == 3):
+            return str(adm.viewInvoice(3))
+        elif(selection == 2):
+            return str(adm.viewInvoice(2))
         else:
-            return adm.viewInvoice(1)
-    except:
+            return str(adm.viewInvoice(1))
+    except Exception as exp:
         return "An error occured while performing this action"
 
 
