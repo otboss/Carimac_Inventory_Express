@@ -2,16 +2,16 @@ import os
 import getpass
 import time
 import requests
+import ast
 
 ########
 #CLASSES
 ########
  
 class Item:
-    def __init__(self, id, name, price):
-        self.id = id
+    def __init__(self, name, quantity):
         self.name = name
-        self.price = price
+        self.quantity = quantity
 
 class Invoice:
     def __init__(self, id, InventoryRecordId, quantity):
@@ -19,25 +19,19 @@ class Invoice:
         self.item = InventoryRecordId
         self.quantity = quantity
         
-class Account:
-    def __init__(self, id, employeeId, login, pwd, slt, isAdm):
+class UserAccount:
+    def __init__(self, id, password):
         self.id = id
-        self.employeeId = employeeId
-        self.login = login
-        self.pwd = pwd
-        self.slt = slt
-        self.isAdm = isAdm    
+        self.password = password   
         
 class Employee:
     def __init__(self, id, fname, mname, lname, dob, email, phone, date):
         self.id = id
         self.fname = fname
         self.lname = lname
-        self.pwd = pwd
 
 class Notification:
-    def __init__(self, id, title, message):
-        self.id = id
+    def __init__(self, title, message):
         self.title = title
         self.message = message
         
@@ -46,30 +40,8 @@ class Notification:
 
 
 
-
-#FUNCTIONS
-
-'''
-database = [
-    [   
-        {"id":"", 
-        "fname":"", "mname":"", "lname":"", "dob":"", "eml":"", "fname":"", "fname":"", "fname":"", "fname":"", "fname":""}
-    
-    ],
-    
-    [
-        
-    
-    ],
-    
-    [
-        
-    
-    ]
-]
-'''
-
 isAdmin = False
+
 
 def login(id, password):
     global isAdmin
@@ -80,6 +52,7 @@ def login(id, password):
         return 1
     return 0
 
+
 def logout():
     global running
     isAdmin = False
@@ -87,16 +60,55 @@ def logout():
     os.system('reset || cls')
     
 
-def search(query, sorting):
+def search(query):
     r = requests.get(url+"search?query="+query)
-    print(r.text)
-    if sorting == 123:
-        print("")
-    else:
-        print("")
-    results = []
-    return results
-
+    lst = ast.literal_eval(r.text)
+    print("==========================")
+    print("ITEM RELATED TO YOUR QUERY")
+    print("==========================")
+    print()
+    if len(lst) == 0:
+        print(" No results found.")
+    for i in range(len(lst)): 
+        print(" "+ str(i+1)+"] "+lst[i])
+    print("\n")
+    
+    
+def search2(query):
+    r = requests.get(url+"search?query="+query)
+    lst = ast.literal_eval(r.text)
+    print("==========================")
+    print("ITEM RELATED TO YOUR QUERY")
+    print("==========================")
+    print()
+    if len(lst) == 0:
+        print(" No results found.")
+    for i in range(len(lst)): 
+        print(" "+ str(i+1)+"] "+lst[i])
+    print("\n")
+    return lst
+    
+    
+def deleteItem(query):
+    p = search2(query)
+    if(len(p) == 0):
+        print("No results found..")
+        return
+    item = ""
+    while(True):
+        try:
+            item = input("Select the desired item: ")
+            if(item == 'exit'):
+                return
+            item = int(item)
+            break
+        except:
+            print("\nEnter a valid option shown or 'exit' to cancel\n")
+    r = requests.get(url+"deleteitem?item="+p[item-1])
+    print("\n"+r.text+"\n")
+    
+        
+    
 
 def adminMenu():
     print("Select an option shown below: ")
@@ -105,7 +117,7 @@ def adminMenu():
     print(" 3] Add Account")  
     print(" 4] Remove Item") 
     print(" 5] Remove Account") 
-    print(" 6] View Orders") 
+    print(" 6] View Invoices") 
     print(" 7] Clear Screen")
     print(" 8] Log Off\n") 
 
@@ -132,7 +144,10 @@ def connect(ip, port):
         return 1
     except:
         return 0
-    
+
+def insertItem(item):
+    r = requests.get(url+"additem?item="+item)
+    print("\n"+r.text+"\n")
 
 
 
@@ -177,29 +192,50 @@ if __name__ == "__main__":
                         logout()
                     
                     if(choice == 1):
-                        query = input("Enter the search query :")
-                        print(search(query, 123))
+                        search(input("\nEnter the search query: "))
                         
                     if(choice == 2):
-                        item = Item()
-                        item.name = input("Enter the item name: ")
-                        item.quantity = float(input("Enter the item quantity: "))
-                        
-                        query = input("Enter the search query :")
+                        name = input("Enter the item name: ")
+                        while(True):
+                            try:
+                                quantity = float(input("Enter the item quantity: "))
+                                break
+                            except:
+                                print("Enter a valid quantity")
+                        item = Item(name, quantity)
+                        insertItem(str(item.__dict__))
                         
                     if(choice == 3):
-                        query = input("Enter the search query :")
+                        query = input("Enter the search query: ")
                         
                     if(choice == 4):
+                        deleteItem(input("Enter a substring of the item name: "))
+                        
+                    if(choice == 5):
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
                         os.system('reset || cls')
                         
-                    if(choice == 4):
-                        os.system('reset || cls')
-                        
-                    if(choice == 4):
+                    if(choice == 6):
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
                         os.system('reset || cls')
                         
                     if(choice == 7):
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
+                        ####CODE HERE###
                         os.system('reset || cls')
                 else:
                     mainMenu()
@@ -218,7 +254,10 @@ if __name__ == "__main__":
                         break      
                     if choice == 1:
                         query = input("Enter Search Query: ")
-                        print (search)
+                        search(input("\nEnter the search query :"), 123)
+                        
+                        
+                        
                     if choice == 2:
                         #COMPLETE OPTION 2
                         print()
