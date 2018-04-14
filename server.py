@@ -1,14 +1,8 @@
 import os
 import getpass
-#import sqlite3
 import requests
 from flask import Flask, request, jsonify
 import ast
-
-
-#VARIABLES
-#db = sqlite3.connect("cmac.db").cursor()
-
 
 
 
@@ -37,11 +31,16 @@ class Database:
                 results.append(i["name"])
         results.sort()
         return str(results)
-    
+            
     def addInvoice(self, invoice):
         self.tables["invoices"].append(invoice)
         return True
-
+        
+    def getQuantity(self, itemName):
+        for i in self.tables["items"]:
+            if itemName == i["name"]:
+                return i["quantity"]
+        return 0
 
 
 class Item:
@@ -111,12 +110,6 @@ class Administrator(Employee):
         return True
         
         
-        
-        
-        
-    
-
-
 
 #FUNCTIONS
 def login(idnum, password):
@@ -126,10 +119,7 @@ def login(idnum, password):
             return 1
     return 0
 
-    
-    
-    
-    
+
     
 #SERVER
 app = Flask(__name__)
@@ -147,42 +137,64 @@ def index():
 @app.route('/login', methods=['GET','POST'])
 def loginuserin():
     global isLoggedIn
-    #print(request.form)
     if(login(request.form['id'], request.form['password'])):
         isLoggedIn = True
         return '1'
     else:
         return '0'
-    #URL
-    #http://127.0.0.1:4000/?login=username&password=password
-    #FOR GET REQUESTS
-    #~ print (dict(request.args))
-    #~ #FOR POST REQUESTS
-    #~ print (dict(request.form))     
-    #~ return "This is the login page"
-    
- 
- 
  
     
 @app.route('/register', methods=['GET','POST'])
 def register():
     return "This is the register page"
-    
-
-
-
 
 
 @app.route('/search', methods=['GET','POST'])
 def search():
+    global db
     query = dict(request.args)['query'][0]
     result = db.searchForItem(query)
     return result
+
+
+@app.route('/getaccounts', methods=['GET','POST'])
+def getaccounts():
+    global db
+    accounts = []
+    for i in db.tables["accounts"]:
+        accounts.append(i["id"])
+    return str(accounts)
     
     
+@app.route('/getquantity', methods=['GET','POST'])
+def getquantity():
+    global db
+    item = dict(request.args)['name'][0]
+    return str(db.getQuantity(item))    
     
+@app.route('/addinvoice', methods=['GET','POST'])
+def addinvoice():
+    global db
+    invoice = ast.literal_eval(dict(request.args)['invoice'][0])
+    print(invoice)
+    db.tables["invoices"].append(invoice)
+    return "Invoice added successfully"
+
+
+@app.route('/addaccount', methods=['GET','POST'])
+def addaccount():
+    global db
+    newUser = UserAccount(dict(request.args)['id'][0], dict(request.args)['password'][0])
+    db.tables["accounts"].append(newUser.__dict__)
+    return "Account added successfully"
     
+
+@app.route('/deleteaccount', methods=['GET','POST'])
+def deleteaccount():
+    global db
+    index = int(dict(request.args)['id'][0])
+    db.tables["accounts"].pop(index)
+    return "Account removed successfully"
     
 
 @app.route('/additem', methods=['GET','POST'])
@@ -202,7 +214,6 @@ def additem():
     return "Item added successfully"
 
 
-
 @app.route('/deleteitem', methods=['GET','POST'])
 def deleteitem():
     global db
@@ -215,9 +226,9 @@ def deleteitem():
         return "An error occurred during the deletion process"
 
 
-
 @app.route('/viewinvoices', methods=['GET','POST'])
 def viewinvoices():
+    global adm
     try:
         selection = int(dict(request.args)['selection'][0])
         if(selection == 3):
@@ -226,28 +237,13 @@ def viewinvoices():
             return str(adm.viewInvoice(2))
         else:
             return str(adm.viewInvoice(1))
-    except Exception as exp:
+    except:
         return "An error occured while performing this action"
-
-
-
-
-
-
     
 
 if __name__ == "__main__":
     db = Database()
     adm = Administrator("Sheree", "Austin", "admin")
-    item = Item("pen", 3)   
-    #~ print(item.__dict__)
-    #print(db.__dict__)
-    #print(db.tables)
-    #db.showdb()
-    #print(db.db)
     app.debug = True
     app.run(host='127.0.0.1', port=4000)
-
-
     
-

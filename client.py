@@ -5,6 +5,7 @@ import requests
 import ast
 import datetime
 import sys
+import random
 
 ########
 #CLASSES
@@ -42,12 +43,10 @@ class Employee:
         #~ self.title = title
         #~ self.message = message
         
-#INVENTORY CLASS NOT INCLUDED, THE INVENTORY WOULD BE AN SQLLITE FILE RATHER THAN A PYTHON OBJECT
-#THE SQLLITE FIEL WOULD STORE ALL ACCOUNTS, NOTIFICATIONS, 
+#NOTIFICATIONS WOULD BE DISPLAYED ON THE USERS CONSOLE ITSELF AS THEY APPEAR, 
+#THEREFORE A NOTIFICATION CLASS IS NOT NECESSARY
 
-
-
-isAdmin = False
+isAdmin = 0
 
 def printf(format, *args):
     sys.stdout.write(format % args)
@@ -58,14 +57,15 @@ def login(id, password):
     r = requests.post(url+"login", data={'id': id, 'password': password})
     if(r.text == "1"):
         if id == "admin":
-            isAdmin = True
+            isAdmin = 1
         return 1
     return 0
 
 
 def logout():
+    global isAdmin
     global running
-    isAdmin = False
+    isAdmin = 0
     running = False
     os.system('reset || cls')
     
@@ -82,9 +82,10 @@ def search(query):
     for i in range(len(lst)): 
         print(" "+ str(i+1)+"] "+lst[i])
     print("\n")
-    
-    
+
+
 def search2(query):
+    #SEARCH2 RETURNS A LIST UPON COMPLETION
     r = requests.get(url+"search?query="+query)
     lst = ast.literal_eval(r.text)
     print("==========================")
@@ -132,9 +133,37 @@ def getInvoices(selection):
         print("Date: " + i["date"] + "\n")
         for j in range(len(i["items"])):
             printf(" %2d] %13s %5.1f\n", j, i["items"][j]["name"], i["items"][j]["quantity"])
-            #print(" "+str(j)+"]  " + i["items"][j]["name"] + "   " + str(i["items"][j]["quantity"]))
         print("\n\n\n")
-
+        
+        
+def addAccount(id, password):
+    global url
+    r = requests.get(url+"addaccount?id="+str(id)+"&password="+str(password))
+    print()
+    print(r.text)
+    print()
+    
+def removeAccount():
+    global url
+    r = requests.get(url+"getaccounts")
+    accs = ast.literal_eval(r.text)
+    print("\nEmployee accounts: \n")
+    for i in range(len(accs)):
+        printf("%5d %7s\n", i, str(accs[i]))
+    while True:
+        try:
+            choice = input("\n\nSelect from the accounts list above or enter 'exit' to cancel: ")
+            if(choice == "exit"):
+                return
+            choice = int(choice)
+            if(choice < 0 and choice > len(accs)-1):
+                raise Exception()
+            break
+        except:
+            print("Enter a valid selection from the list")
+    r = requests.get(url+"deleteaccount?id="+str(choice))
+    print(r.text)
+    
 def adminMenu():
     print("Select an option shown below: ")
     print(" 1] Search Item")
@@ -149,10 +178,9 @@ def adminMenu():
 def mainMenu():
     print("Select an option shown below: ")
     print(" 1] Search Item")
-    print(" 2] Place Order")
-    print(" 3] View Notifications")  
-    print(" 4] Clear Screen")  
-    print(" 5] Log Off\n") 
+    print(" 2] Place Order") 
+    print(" 3] Clear Screen")  
+    print(" 4] Log Off\n") 
 
 def title():
     print("=========================")
@@ -174,9 +202,37 @@ def insertItem(item):
     r = requests.get(url+"additem?item="+item)
     print("\n"+r.text+"\n")
 
-
-
- 
+def addToInvoice():
+    global url
+    invoice = Invoice(random.randint(0,100000), username)
+    item = ""
+    while(True):
+        search(input("\nEnter a substring of the item name: "))
+        selection = input("Enter the name of the desired item from the list above: ")
+        r = requests.get(url+"getquantity?name="+str(selection))
+        while(int(ast.literal_eval(r.text)) == 0):
+            print("Item not found. please try again\n\n")
+            selection = input("Enter the name of the desired item from the list above: ")
+            r = requests.get(url+"getquantity?name="+str(selection))                
+        available = ast.literal_eval(r.text)
+        printf("There are %.1f of this item available.\n\n", available)
+        while True:
+            try:
+                quantity = float(input("Enter your quantity :"))
+                while(quantity > available):
+                    print("\nPlease enter a desired quantity that is less than the items is stock\n")
+                    quantity = float(input("Enter your quantity :"))
+                break
+            except:
+                print("\nInvalid Entry. Input must be numerical\n")
+        ch = input("add more items? [y/N]: ")
+        if ch == "y" or ch == "Y":
+            continue
+        else:
+            item = Item(selection, quantity)
+            r = requests.get(url+"addinvoice?invoice="+str(item.__dict__))
+            print(r.text)
+            break
 #VARIABLES
 
 order = []
@@ -201,8 +257,8 @@ if __name__ == "__main__":
             running = True
             os.system('reset || cls')
             while(running):
-                print("Logged in as: "+username+"\n")
-                if(isAdmin):
+                print("\nLogged in as: "+username+"\n")
+                if(isAdmin == 1):
                     adminMenu()
                     while(True):
                         try:                
@@ -231,19 +287,18 @@ if __name__ == "__main__":
                         insertItem(str(item.__dict__))
                         
                     if(choice == 3):
-                        continue
+                        while True:
+                            try:
+                                addAccount(int(input("\nEnter the new account's id number: ")), input("Enter the new account's password: "))
+                                break
+                            except:
+                                print("\nEnter an integer value\n")
                         
                     if(choice == 4):
                         deleteItem(input("\nEnter a substring of the item name: "))
                         
                     if(choice == 5):
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        os.system('reset || cls')
+                        removeAccount()
                         
                     if(choice == 6):
                         while True: 
@@ -260,19 +315,13 @@ if __name__ == "__main__":
                         getInvoices(selection)
                         
                     if(choice == 7):
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
-                        ####CODE HERE###
                         os.system('reset || cls')
                 else:
                     mainMenu()
                     while True:
                         try:                
                             choice = int(input("Choice: "))
-                            if choice < 1 or choice > 7:
+                            if choice < 1 or choice > 5:
                                 raise Exception()
                             break
                         except:
@@ -286,11 +335,9 @@ if __name__ == "__main__":
                         query = input("Enter Search Query: ")
                         search(input("\nEnter the search query :"), 123)
                         
-                        
-                        
                     if choice == 2:
-                        #COMPLETE OPTION 2
-                        print()
+                        addToInvoice()
+                        
                     if choice == 3:
                         #COMPLETE OPTION 2
                         print()
