@@ -75,9 +75,9 @@ class Employee:
         self.firstname = firstname
         self.lastname = lastname
 
-class Staff(Employee):
-        #def createOrder():
-        #def ViewOrder():
+#~ class Staff(Employee):
+        #~ #def createOrder():
+        #~ #def ViewOrder():
 
 class Administrator(Employee, metaclass=Singleton):
     pass                                        #PASS IS USED TO INHERIT ALL METHODS OF THE PARENT CLASS (Employee)
