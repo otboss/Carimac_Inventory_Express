@@ -75,9 +75,7 @@ class Employee:
         self.firstname = firstname
         self.lastname = lastname
 
-#~ class Staff(Employee):
-        #~ #def createOrder():
-        #~ #def ViewOrder():
+
 
 class Administrator(Employee, metaclass=Singleton):
     pass                                        #PASS IS USED TO INHERIT ALL METHODS OF THE PARENT CLASS (Employee)
@@ -233,6 +231,16 @@ def deleteitem():
     except Exception as exp:
         print(exp)
         return "An error occurred during the deletion process"
+        
+@app.route('/getorders', methods=['GET','POST'])
+def getorders():
+    global db
+    orders = []
+    staffId = dict(request.args)['id'][0]
+    for i in db.tables["invoices"]:
+        if i['staffIdNum'] == staffId:
+            orders.append(i)
+    return str(orders)
 
 
 @app.route('/viewinvoices', methods=['GET','POST'])

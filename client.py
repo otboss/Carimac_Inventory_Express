@@ -10,7 +10,14 @@ import random
 ########
 #CLASSES
 ########
- 
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+        
 class Item:
     def __init__(self, name, quantity):
         self.name = name
@@ -27,16 +34,81 @@ class Invoice:
         self.staffIdNum = staffIdNum
         self.filled = False
         
-class UserAccount:
-    def __init__(self, id, password):
-        self.id = id
-        self.password = password   
-        
 class Employee:
-    def __init__(self, id, fname, mname, lname, dob, email, phone, date):
+    def __init__(self, id, fname, mname, lname):
         self.id = id
         self.fname = fname
         self.lname = lname
+
+class Staff(Employee):
+    pass
+    def __init__(self, staffId):
+        self.staffId = staffId
+        self.orders = []
+  
+    def createOrder(self):
+        global url
+        invoice = Invoice(random.randint(0,100000), username)
+        item = ""
+        available = 0
+        quantity = 0
+        while(True):
+            search(input("\nEnter a substring of the item name: "))
+            selection = input("See what you want? if not enter 'exit' to cancel, 'quit' to quit\n\n enter the item name: ")
+            if(selection == 'exit'):
+                continue
+            if(selection  == 'quit'):
+                return
+            r = requests.get(url+"getquantity?name="+str(selection))
+            try:
+                available = int(ast.literal_eval(r.text))
+                if available <= 0:
+                    print(" The item is entered is currently not in stock")
+                    continue
+            except:
+                print("Enter a valid option shown")
+                continue                
+            printf("\nThere are %.1f of this item available.\n\n", available)
+            while True:
+                try:
+                    quantity = int(input("Enter your desired quantity  "))
+                    while(quantity > available):
+                        print("\nPlease enter a desired quantity that is less than the items is stock\n")
+                        quantity = int(input("Enter your desired quantity  "))
+                    break
+                except:
+                    print("\nInvalid Entry. Input must be numerical\n")
+            item = Item(selection, quantity)
+            if(selection != "" and quantity > 0):
+                invoice.items.append(item.__dict__)
+            ch = input("add more items? [y/N]: ")
+            if ch == "y" or ch == "Y":
+                continue
+            else:
+                print(invoice.__dict__)
+                r = requests.get(url+"addinvoice?invoice="+str(invoice.__dict__))
+                print(r.text)
+                break
+    def viewOrders(self, staffId):
+        r = requests.get(url+"getorders?id="+str(staffId))
+        orders = ast.literal_eval(r.text)
+        print("==============================")
+        print("|        ORDER HISTORY       |")
+        print("==============================")
+        print()
+        for i in range(len(orders)):
+            print("-------------------------")
+            print("ID: "+ str(orders[i]["id"]))
+            print("Date: "+orders[i]["date"]+"\n\n")
+            for j in orders[i]["items"]:
+                printf("%7s%8d\n", j["name"], j["quantity"])
+            print("\n-------------------------\n\n")             
+        
+class UserAccount:
+    def __init__(self, id, password):
+        self.id = id
+        self.password = password  
+        
 
 #~ class Notification:
     #~ def __init__(self, title, message):
@@ -181,8 +253,9 @@ def mainMenu():
     print("Select an option shown below: ")
     print(" 1] Search Item")
     print(" 2] Place Order") 
-    print(" 3] Clear Screen")  
-    print(" 4] Log Off\n") 
+    print(" 3] View Orders") 
+    print(" 4] Clear Screen")  
+    print(" 5] Log Off\n") 
 
 def title():
     print("=========================")
@@ -204,37 +277,7 @@ def insertItem(item):
     r = requests.get(url+"additem?item="+item)
     print("\n"+r.text+"\n")
 
-def addToInvoice():
-    global url
-    invoice = Invoice(random.randint(0,100000), username)
-    item = ""
-    while(True):
-        search(input("\nEnter a substring of the item name: "))
-        selection = input("Enter the name of the desired item from the list above: ")
-        r = requests.get(url+"getquantity?name="+str(selection))
-        while(int(ast.literal_eval(r.text)) == 0):
-            print("Item not found. please try again\n\n")
-            selection = input("Enter the name of the desired item from the list above: ")
-            r = requests.get(url+"getquantity?name="+str(selection))                
-        available = ast.literal_eval(r.text)
-        printf("There are %.1f of this item available.\n\n", available)
-        while True:
-            try:
-                quantity = float(input("Enter your quantity :"))
-                while(quantity > available):
-                    print("\nPlease enter a desired quantity that is less than the items is stock\n")
-                    quantity = float(input("Enter your quantity :"))
-                break
-            except:
-                print("\nInvalid Entry. Input must be numerical\n")
-        ch = input("add more items? [y/N]: ")
-        if ch == "y" or ch == "Y":
-            continue
-        else:
-            item = Item(selection, quantity)
-            r = requests.get(url+"addinvoice?invoice="+str(item.__dict__))
-            print(r.text)
-            break
+
 #VARIABLES
 
 order = []
@@ -319,6 +362,7 @@ if __name__ == "__main__":
                     if(choice == 7):
                         os.system('reset || cls')
                 else:
+                    currentStaff = Staff(username)
                     mainMenu()
                     while True:
                         try:                
@@ -329,19 +373,21 @@ if __name__ == "__main__":
                         except:
                             print("\nInvalid Selection\n")
                             mainMenu()
-                    if choice == 4:
+                    if choice == 5:
                         #LOG OUT
                         logout()       
                         break      
                     if choice == 1:
-                        query = input("Enter Search Query: ")
-                        search(input("\nEnter the search query :"), 123)
+                        search(input("\nEnter the search query: "))
                         
                     if choice == 2:
-                        addToInvoice()
+                        currentStaff.createOrder()
                         
                     if choice == 3:
-                        #COMPLETE OPTION 2
-                        print()
+                        currentStaff.viewOrders(username)  
+                        
+                                            
+                    if choice == 4:
+                        os.system('reset || cls')
         else:
             print("Failed to login\n")
