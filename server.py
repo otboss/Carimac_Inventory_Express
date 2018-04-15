@@ -80,7 +80,7 @@ class Staff(Employee):
         #def ViewOrder():
 
 class Administrator(Employee, metaclass=Singleton):
-    pass                                        #why is pass needed here?
+    pass                                        #PASS IS USED TO INHERIT ALL METHODS OF THE PARENT CLASS (Employee)
     def viewInvoice(self, selection):
         global db
         unfilledInvoices = []
