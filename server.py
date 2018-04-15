@@ -18,18 +18,15 @@ class Singleton(type):
 class Database(metaclass=Singleton):
     def __init__(self):
         self.tables = {"accounts":[{"id":"admin", "password":"password"}], "invoices":[{"id":1, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-14", "staffIdNum":0, "filled":False}, {"id":2, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-15", "staffIdNum":0, "filled":False}], "items":[{"name": "pen", "quantity": 3}]}
-          
     def addItem(self, item):
         self.tables["items"].append(item)
         return True
-        
     def removeItem(self, itemName):
         for i in range(len(self.tables["items"])):
             if self.tables["items"][i]["name"] == itemName:
                 self.tables["items"].pop(i)
                 return True
         return False
-        
     def searchForItem(self, item):
         item = item.lower()
         results = []
@@ -54,10 +51,8 @@ class Item:
     def __init__(self, name, quantity):
         self.name = name
         self.quantity = quantity
-    
     def editItemName(self, name):
         self.name = name
-        
     def editItemQuantity(self, quantity):
         self.quantity = quantity
 
@@ -138,9 +133,6 @@ def index():
     return "This is the home page"
 
 
-
-
-
 @app.route('/login', methods=['GET','POST'])
 def loginuserin():
     global isLoggedIn
@@ -150,7 +142,6 @@ def loginuserin():
     else:
         return '0'
  
-    
 @app.route('/register', methods=['GET','POST'])
 def register():
     return "This is the register page"
@@ -259,8 +250,18 @@ def viewinvoices():
     
 
 if __name__ == "__main__":
-    db = Database()
+    db = Database()   
+    try:
+        backup = open("cmac.db", "r")
+        db.tables = ast.literal_eval(backup.read())
+        backup.close()
+    except:
+        backup = open("cmac.db", "w")
+        backup.write('{"accounts":[{"id":"admin", "password":"password"}], "invoices":[], "items":[{"name": "pen", "quantity": 3}]}')
+        backup.close()
     adm = Administrator("Sheree", "Austin", "admin")
     app.debug = True
     app.run(host='127.0.0.1', port=4000)
-    
+    backup = open("cmac.db", "w")
+    backup.write(str(db.tables))
+    backup.close()

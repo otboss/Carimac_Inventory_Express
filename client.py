@@ -44,8 +44,6 @@ class Staff(Employee):
     pass
     def __init__(self, staffId):
         self.staffId = staffId
-        self.orders = []
-  
     def createOrder(self):
         global url
         invoice = Invoice(random.randint(0,100000), username)
