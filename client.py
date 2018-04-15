@@ -121,6 +121,8 @@ def deleteItem(query):
 def getInvoices(selection):
     global url
     r = requests.get(url+"viewinvoices?selection="+str(selection))
+    print(r.text)
+    #AN ERROR OCCURS HERE. CREATE AN INVOICE AND ATTEMPT TO VIEW IT
     invoices = ast.literal_eval(r.text)
     if(len(invoices) == 0):
         print("\nNo invoices fall under the this category\n\n")
@@ -310,7 +312,7 @@ if __name__ == "__main__":
                                 selection = int(input("Choice: " ))
                                 break
                             except:
-                                print("\nEnter a selection shown\n")
+                                print("\nEnter a valid selection\n")
                                 
                         getInvoices(selection)
                         

@@ -207,7 +207,7 @@ def additem():
     for i in r:
         item = ast.literal_eval(i)
         print(item["name"])
-        if(len(ast.literal_eval(finditem(item["name"]))) > 0):
+        if(len(ast.literal_eval(db.searchForItem(item["name"]))) > 0):
             return "Item not added. It already exists!"
         else:
             db.addItem(item)
