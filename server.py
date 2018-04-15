@@ -7,8 +7,15 @@ import ast
 
 
 #CLASSES
+
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
         
-class Database:
+class Database(metaclass=Singleton):
     def __init__(self):
         self.tables = {"accounts":[{"id":"admin", "password":"password"}], "invoices":[{"id":1, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-14", "staffIdNum":0, "filled":False}, {"id":2, "items":[{"name": "books", "quantity": 5}, {"name": "staplers", "quantity": 7}], "date":"2018-04-15", "staffIdNum":0, "filled":False}], "items":[{"name": "pen", "quantity": 3}]}
           
@@ -68,10 +75,12 @@ class Employee:
         self.firstname = firstname
         self.lastname = lastname
 
+class Staff(Employee):
+        #def createOrder():
+        #def ViewOrder():
 
-
-class Administrator(Employee):
-    pass
+class Administrator(Employee, metaclass=Singleton):
+    pass                                        #why is pass needed here?
     def viewInvoice(self, selection):
         global db
         unfilledInvoices = []
