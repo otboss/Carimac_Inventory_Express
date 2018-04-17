@@ -58,9 +58,15 @@ class Item:
 
 
 class UserAccount:
+    global db
     def __init__(self, id, password):
         self.id = id
         self.password = password
+    def login(self):
+        for i in db.tables["accounts"]:
+            if dict(i)["id"] == self.id and dict(i)["password"] == self.password:
+                return 1
+        return 0
 
 
 
@@ -111,15 +117,7 @@ class Administrator(Employee, metaclass=Singleton):
         db.tables["accounts"].append(accountId)
         return True
         
-        
 
-#FUNCTIONS
-def login(idnum, password):
-    global db
-    for i in db.tables["accounts"]:
-        if dict(i)["id"] == idnum and dict(i)["password"] == password:
-            return 1
-    return 0
 
 
     
@@ -135,9 +133,8 @@ def index():
 
 @app.route('/login', methods=['GET','POST'])
 def loginuserin():
-    global isLoggedIn
-    if(login(request.form['id'], request.form['password'])):
-        isLoggedIn = True
+    loginAttempt = UserAccount(request.form['id'], request.form['password'])
+    if(loginAttempt.login()):
         return '1'
     else:
         return '0'

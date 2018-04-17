@@ -136,9 +136,9 @@ def logout():
 def search(query):
     r = requests.get(url+"search?query="+query)
     lst = ast.literal_eval(r.text)
-    print("==========================")
-    print("ITEM RELATED TO YOUR QUERY")
-    print("==========================")
+    print("=============================")
+    print("ITEM(S) RELATED TO YOUR QUERY")
+    print("=============================")
     print()
     if len(lst) == 0:
         print("    No results found")
@@ -151,9 +151,9 @@ def search2(query):
     #SEARCH2 RETURNS A LIST UPON COMPLETION
     r = requests.get(url+"search?query="+query)
     lst = ast.literal_eval(r.text)
-    print("==========================")
-    print("ITEM RELATED TO YOUR QUERY")
-    print("==========================")
+    print("=============================")
+    print("ITEM(S) RELATED TO YOUR QUERY")
+    print("=============================")
     print()
     if len(lst) == 0:
         print("    No results found")
@@ -344,6 +344,8 @@ if __name__ == "__main__":
                             print(" 3] View All Invoices\n")
                             try:
                                 selection = int(input("Choice: " ))
+                                if(selection < 1 or selection > 3):
+                                    raise Exception()
                                 break
                             except:
                                 print("\nEnter a valid selection\n")
@@ -365,9 +367,8 @@ if __name__ == "__main__":
                             print("\nInvalid Selection\n")
                             mainMenu()
                     if choice == 5:
-                        #LOG OUT
                         logout()       
-                        break      
+                        
                     if choice == 1:
                         search(input("\nEnter the search query: "))
                         
@@ -376,8 +377,7 @@ if __name__ == "__main__":
                         
                     if choice == 3:
                         currentStaff.viewOrders(username)  
-                        
-                                            
+                            
                     if choice == 4:
                         os.system('reset || cls')
         else:
